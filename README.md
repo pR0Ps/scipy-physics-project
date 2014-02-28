@@ -15,9 +15,10 @@ Installation - UNIX
 4. Install dependencies for Scipy (`sudo apt-get build-dep python-numpy python-scipy`).
 5. Install the required packages (`pip install -r requirements.txt`).
 
-Running
--------
+Instructions
+------------
 
 - Run `python main.py` to run the script
 - To run an IPython shell run `ipython3`
-- To run an IPython web workbook run `ipython3 notebook`
+- To run the IPython web notebook insterface run `ipython3 notebook`
+- To convert an IPython notebook to HTML run `ipython3 nbconvert --to html book.ipynb`

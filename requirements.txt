@@ -5,3 +5,4 @@ ipython[all]
 pandas
 sympy
 nose
+oct2py

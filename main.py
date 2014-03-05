@@ -2,38 +2,74 @@
 
 import numpy as np
 from scipy.integrate import ode
+from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 import warnings
 
+import math
 
-# Some sample functions and values
+
 def logistic(t, y, r):
     return r * y * (1.0 - y)
 
-r = .01
-t0 = 0
-y0 = 1e-5
-t1 = 5000.0
+def ode45_test():
+    r = .01
+    t0 = 0
+    y0 = 1e-5
+    t1 = 5000.0
+    solver = ode(logistic).set_integrator('dopri5', nsteps=1)
+    solver.set_initial_value(y0, t0).set_f_params(r)
 
-# dopri5 is equivalent to ode45 in MATLAB
-solver = ode(logistic).set_integrator('dopri5', nsteps=1)
-solver.set_initial_value(y0, t0).set_f_params(r)
+    # Suppress warnings
+    solver._integrator.iwork[2] = -1
+    warnings.filterwarnings("ignore", category=UserWarning)
 
-# Suppress warnings
-solver._integrator.iwork[2] = -1
-warnings.filterwarnings("ignore", category=UserWarning)
+    sol = []
 
-sol = []
+    # Integrate until t1
+    while solver.t < t1:
+        solver.integrate(t1, step=True)
+        sol.append([solver.t, solver.y])
 
-# Integrate until t1
-while solver.t < t1:
-    solver.integrate(t1, step=True)
-    sol.append([solver.t, solver.y])
+    # Set warnings back on
+    warnings.resetwarnings()
 
-# Set warnings back on
-warnings.resetwarnings()
+    # Plot the data
+    sol = np.array(sol)
+    plt.plot(sol[:,0], sol[:,1], 'b.-')
+    plt.show()
 
-# Plot the data
-sol = np.array(sol)
-plt.plot(sol[:,0], sol[:,1], 'b.-')
-plt.show()
+def get_path(v, ang):
+    """Show the path of the baseball"""
+    ang = math.radians(ang)
+    arr = []
+    for t in range(1000):
+        ms = t/100
+        x_pos = math.cos(ang) * v * ms
+        y_pos = math.sin(ang) * v * ms + 0.5 * -9.8 * math.pow(ms, 2)
+        arr.append((x_pos, y_pos))
+        if (y_pos < 0):
+            break
+
+    return np.array(arr)
+
+def show_paths(np_arrs):
+    for x in np_arrs:
+        plt.plot(x[:,0], x[:,1], 'b.-')
+    
+    plt.show()
+
+
+if __name__ == "__main__":
+    BASEBALL_M = 0.145 # Mass (kg)
+    BASEBALL_CD = 0.2 # Drag coeff 
+    BASEBALL_P = 1.2 # Air denity @ sea level (kg/m^3)
+    BASEBALL_RAD = 0.076/2 # Radius (m)
+    BASEBALL_A = math.pi * math.pow(BASEBALL_RAD, 2) # Cross-sectional area (m^2)
+
+    # Air resistance
+    BASEBALL_B = 1/2 * BASEBALL_P * BASEBALL_CD * BASEBALL_A
+    
+    show_paths((get_path(10, x) for x in range(1, 90, 10)))
+
+

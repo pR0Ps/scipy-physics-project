@@ -71,14 +71,30 @@ class Project(object):
         """Show the path of the baseball"""
         ang = math.radians(ang)
         arr = []
-        for t in range(-1000, 1000):
-            ms = t/100
-            vt = (self.BASEBALL_M * self.GRAVITY)/self.BASEBALL_B
 
-            x_pos = ((v * self.BASEBALL_M)/self.BASEBALL_B) * math.cos(ang) * (1 - math.exp((-self.BASEBALL_B * ms)/self.BASEBALL_M))
+        x_pos = 0
+        y_pos = 0
+
+        vx = math.cos(ang)
+        vy = math.sin(ang)
+        ax = -self.BASEBALL_B * v * vx
+        ay = -self.BASEBALL_B * v * vy - self.GRAVITY
+
+        dt = 0.1
+        for t in range(1000):
+            ms = t/100
+
+            x_pos += vx * dt + ax * dt**2
+            y_pos += vy * dt + ay * dt**2
+
+            vx += ax * dt
+            vy += ay * dt
+
+            #vt = (self.BASEBALL_M * self.GRAVITY)/self.BASEBALL_B
+            #x_pos = ((v * self.BASEBALL_M)/self.BASEBALL_B) * math.cos(ang) * (1 - math.exp((-self.BASEBALL_B * ms)/self.BASEBALL_M))
             #y_pos = (v * self.BASEBALL_M/self.BASEBALL_B) * math.sin(ang) * (1 - math.exp((-self.BASEBALL_B * t)/(self.BASEBALL_M))) - vt * t
             #y_pos = ((v * vt)/self.GRAVITY) * math.sin(ang) * (1 - math.exp((-self.GRAVITY * t)/(vt))) - (vt * t)
-            y_pos = -(self.BASEBALL_M * self.GRAVITY/self.BASEBALL_B) * ms + (self.BASEBALL_M / self.BASEBALL_B) * (v * math.sin(ang) + (self.BASEBALL_M * self.GRAVITY)/self.BASEBALL_B) * (1 - math.exp((-self.BASEBALL_B * ms)/self.BASEBALL_M))
+            #y_pos = -(self.BASEBALL_M * self.GRAVITY/self.BASEBALL_B) * ms + (self.BASEBALL_M / self.BASEBALL_B) * (v * math.sin(ang) + (self.BASEBALL_M * self.GRAVITY)/self.BASEBALL_B) * (1 - math.exp((-self.BASEBALL_B * ms)/self.BASEBALL_M))
             arr.append((x_pos, y_pos))
             #if (y_pos < 0):
             #    break

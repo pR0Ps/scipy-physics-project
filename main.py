@@ -20,10 +20,10 @@ class Project(object):
 
     def state_function(self, s, dt):
         """Compute and return the next state based on the passed in state and dt"""
-        vx = s[2]
-        vy = s[3]
-        ax = -self.B/self.M * math.sqrt(vx**2 + vy**2) * vx
-        ay = -self.GRAVITY - self.B/self.M * math.sqrt(vx**2 + vy**2) * vy
+        vx = s[2] * dt
+        vy = s[3] * dt
+        ax = -self.B/self.M * math.sqrt(vx**2 + vy**2) * vx * dt
+        ay = -self.GRAVITY - self.B/self.M * math.sqrt(vx**2 + vy**2) * vy * dt
         return [vx, vy, ax, ay]
 
     def get_path(self, v, ang):
@@ -42,8 +42,18 @@ class Project(object):
 
     def show_paths(self, np_arrs):
         """Draw the passed in plots"""
-        for arr in np_arrs:
-            plt.plot(arr[:,0], arr[:,1], '-')
+
+        subplot = plt.subplot();
+
+        arrs = list(np_arrs)
+
+        plots = []
+        for x in range(len(arrs)):
+            plots.append(subplot.plot(arrs[x][:,0], arrs[x][:,1], '-', label=str(x)))
+
+        handles, legends = subplot.get_legend_handles_labels()
+
+        plt.legend(handles, legends)
 
         plt.title('Path of Baseball')
         plt.xlabel('x (m)')

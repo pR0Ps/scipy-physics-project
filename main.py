@@ -42,7 +42,7 @@ class Project(object):
 
         # Integrate while the ball is above the ground
         while solver.y[1] >= 0:
-            solver.integrate(solver.t+0.1)
+            solver.integrate(solver.t + 0.1)
             sol.append([solver.y[0], solver.y[1]])
 
         # Plot the data
@@ -53,9 +53,8 @@ class Project(object):
         x1, y1 = p1
         x2, y2 = p2
 
-        y3, y4 = 0, 0
-        x3 = x1
-        x4 = x2
+        x3, y3 = x1, 0
+        x4, y4 = x2, 0
 
         epsilon = 1e-5
 
@@ -67,7 +66,7 @@ class Project(object):
 
         # Get the x and y
         pre = (x1 * y2 - y1 * x2)
-        post = (x3*y4 - y3*x4)
+        post = (x3 * y4 - y3 * x4)
         x = (pre * (x3 - x4) - (x1 - x2) * post) / dist
         y = (pre * (y3 - y4) - (y1 - y2) * post) / dist
 
@@ -80,13 +79,16 @@ class Project(object):
         # Return the point of intersection
         return (x, y)
 
-    def get_best_path(self):
+    def get_best_path(self, vel, ang_start=30, ang_end=60, ang_step=0.1):
         """Iterate over all angles and find the path with the max distance"""
-        curr_max = 0
-        curr_angle = 0
-        for angle in frange(40, 50, 0.01):
-            path = self.get_path(50, angle)
-            intercept = self.find_zero_intercept(path[-1], path[-2])[0]
+        curr_max = -1
+        curr_angle = -1
+        for angle in frange(ang_start, ang_end, ang_step):
+            path = self.get_path(vel, angle)
+            if len(path) > 1:
+                intercept = self.find_zero_intercept(path[-1], path[-2])[0]
+            else:
+                intercept = path[-1][0]
             if intercept > curr_max:
                 curr_max = intercept
                 curr_angle = angle
@@ -118,7 +120,7 @@ class Project(object):
 
     def main(self):
         """Run the simulations"""
-        best = self.get_best_path()
+        best = self.get_best_path(50)
         print ("Maximum distance {1:.2f} obtained by launching at angle {0:.2f}".format(*best))
         self.show_paths((self.get_path(50, best[0]),))
 

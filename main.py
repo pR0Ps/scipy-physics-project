@@ -19,7 +19,7 @@ class Project(object):
         # Air resistance
         self.B = (1/2) * self.P * self.CD * self.A
 
-    def state_function(self, dt, s):
+    def state_function(self, dt, s, air=True):
         """Compute and return the next state based on the passed in state and dt"""
         vx = s[2]
         vy = s[3]
@@ -79,50 +79,70 @@ class Project(object):
         # Return the point of intersection
         return (x, y)
 
-    def get_best_path(self, vel, ang_start=30, ang_end=60, ang_step=0.1):
+    def get_best_path(self, vel, ang_step=0.1):
         """Iterate over all angles and find the path with the max distance"""
-        curr_max = -1
-        curr_angle = -1
-        for angle in frange(ang_start, ang_end, ang_step):
+        curr_max = None
+        curr_angle = None
+        path = None
+        angle = 1
+        while angle < 90:
             path = self.get_path(vel, angle)
             if len(path) > 1:
                 intercept = self.find_zero_intercept(path[-1], path[-2])[0]
             else:
                 intercept = path[-1][0]
-            if intercept > curr_max:
+            if curr_max is None or intercept > curr_max:
                 curr_max = intercept
                 curr_angle = angle
             else:
                 break
 
-        return curr_angle, curr_max
+            angle += ang_step
 
-    def show_paths(self, np_arrs):
-        """Draw the passed in plots"""
 
-        subplot = plt.subplot();
+        return curr_angle, curr_max, path
 
-        arrs = list(np_arrs)
+    def finalize_plot(self, plot_, title, x_label, y_label, legend=False):
+        """Finalize and show the plot"""
 
-        plots = []
-        for x in range(len(arrs)):
-            plots.append(subplot.plot(arrs[x][:,0], arrs[x][:,1], '-', label=str(x)))
+        if legend:
+            plot_.legend(*plot_.get_legend_handles_labels())
 
-        handles, legends = subplot.get_legend_handles_labels()
-
-        #plt.legend(handles, legends)
-
-        plt.title('Path of Baseball')
-        plt.xlabel('x (m)')
-        plt.ylabel('y (m)')
-
-        plt.show()
+        plt.title(title)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
 
     def main(self):
         """Run the simulations"""
-        best = self.get_best_path(50)
-        print ("Maximum distance {1:.2f} obtained by launching at angle {0:.2f}".format(*best))
-        self.show_paths((self.get_path(50, best[0]),))
+
+        pathfig = plt.figure()
+        pathplot = pathfig.add_subplot(111)
+
+        angledata = []
+
+        v = 50
+        while v < 10000:
+            *best, path = self.get_best_path(v)
+            angledata.append([v, best[0]])
+
+            print ("Launch vel: {0}, Maximum distance {2:.1f} obtained by launching at angle {1:.2f}".format(v, *best))
+            pathplot.plot(path[:,0], path[:,1], '-', label="{0}m/s @ {1:.1f}°".format(v, best[0]))
+
+            v += int(v/2)
+            if v > 10000:
+                v = 10000
+
+        x1,x2,y1,y2 = pathplot.axis()
+        pathplot.axis((0, max(x2, y2), 0, max(x2, y2)))
+        self.finalize_plot(pathplot, "Paths of the baseball", "Distance (m)", "Height (m)", legend=False)
+
+        anglefig = plt.figure()
+        angleplot = anglefig.add_subplot(111)
+        angledata = np.array(angledata)
+        angleplot.plot(angledata[:,0], angledata[:,1], '.-',)
+        self.finalize_plot(angleplot, "Best launch angle at different velocities", "Velocity (m/s)", "Angle (°)")
+
+        plt.show()
 
 if __name__ == "__main__":
     Project().main()
